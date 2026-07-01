@@ -11,9 +11,6 @@ You feed" / "design a real-time recommendation engine."
 [![Coverage](https://img.shields.io/badge/coverage-85%25%2B-brightgreen)](.github/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-| Build time | Role targets | P99 latency | Throughput |
-|---|---|---|---|
-| 8 weeks | SWE/SDE · AI/ML Eng · Research Eng | < 50ms | 100k+ events/sec |
 
 ---
 
@@ -155,18 +152,6 @@ FAISS · MLflow · Optuna · SHAP · Apache Kafka (aiokafka) · Redis · Postgre
 SQLAlchemy · Alembic · Docker · Kubernetes · Terraform · AWS (SageMaker, MSK, ElastiCache, RDS, S3) ·
 Prometheus · Grafana · AlertManager · OpenTelemetry · GitHub Actions · Locust · pytest
 
-## Interview prep
-
-The full set of system-design, ML/research, and SWE interview questions this
-project is built to answer — with the exact reasoning behind every
-architectural decision (Kafka vs. RabbitMQ, two-tower vs. single-model,
-HNSW vs. flat index, LightGBM vs. deep ranking, FAISS hot-swap mechanics,
-sample ratio mismatch checks) — is documented inline as module docstrings
-throughout the codebase rather than a separate prep doc, so the reasoning
-never drifts out of sync with the implementation. Start with:
-`nexusfeed/retrieval/faiss_index.py`, `nexusfeed/models/two_tower.py`, and
-`nexusfeed/experiments/significance.py`.
-
 ---
 
-Built by Anubhav Dixit — Michigan State University, Class of 2027, AI/ML Engineering.
+Built by Anubhav Dixit.
