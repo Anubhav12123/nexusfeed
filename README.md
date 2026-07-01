@@ -7,7 +7,7 @@ at sub-50ms p99 latency. This is a full implementation of the system design
 every FAANG interviewer asks candidates to whiteboard: "design TikTok's For
 You feed" / "design a real-time recommendation engine."
 
-[![CI](https://github.com/anubhavdixit/nexusfeed/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![CI](https://github.com/Anubhav12123/nexusfeed/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/unit%20test%20coverage-41%25-yellow)](.github/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
@@ -102,10 +102,6 @@ make migrate              # Alembic: schema, HNSW index, monthly interaction par
 make seed                  # synthetic data -> FAISS index -> trained LightGBM ranker
 make demo                   # walks the full request flow against the running API
 ```
-
-- API docs: http://localhost:8000/docs
-- Prometheus: http://localhost:9090
-- Grafana: http://localhost:3000 (`admin` / `nexusfeed`)
 
 ## Benchmark results
 
