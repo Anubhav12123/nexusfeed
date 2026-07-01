@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nexusfeed"
+version = "0.1.0"
+description = "Real-Time AI Recommendation and Personalization Engine"
+requires-python = ">=3.11"
+authors = [{ name = "Anubhav Dixit" }]
+readme = "README.md"
+license = { text = "Apache-2.0" }
+
+[tool.setuptools.packages.find]
+include = ["nexusfeed*", "training*"]
+
+[tool.black]
+line-length = 110
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 110
+known_first_party = ["nexusfeed", "training"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+exclude = ["tests/", "scripts/"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+  "integration: tests that require Docker services (Postgres, Redis, Kafka)",
+  "load: locust-based load tests",
+]
+
+[tool.coverage.run]
+source = ["nexusfeed"]
+omit = ["*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true

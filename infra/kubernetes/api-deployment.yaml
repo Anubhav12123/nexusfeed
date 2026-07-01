@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexusfeed-api
+  labels: { app: nexusfeed-api }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: nexusfeed-api }
+  template:
+    metadata:
+      labels: { app: nexusfeed-api }
+    spec:
+      containers:
+        - name: api
+          image: nexusfeed/api:latest
+          ports: [{ containerPort: 8000 }]
+          envFrom:
+            - configMapRef: { name: nexusfeed-config }
+            - secretRef: { name: nexusfeed-secrets }
+          resources:
+            requests: { cpu: "250m", memory: "512Mi" }
+            limits: { cpu: "1", memory: "1Gi" }
+          readinessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexusfeed-api
+spec:
+  selector: { app: nexusfeed-api }
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: ClusterIP

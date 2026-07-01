@@ -1,0 +1,51 @@
+groups:
+  - name: nexusfeed-latency
+    rules:
+      - alert: FeedLatencyP99AboveTarget
+        expr: histogram_quantile(0.99, rate(nexusfeed_feed_latency_seconds_bucket[5m])) > 0.05
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "GET /feed p99 latency exceeds the 50ms target"
+          description: "p99 latency has been above 50ms for 2 minutes — check FAISS retrieval and ranking timings."
+
+      - alert: EventsLatencyP99AboveTarget
+        expr: histogram_quantile(0.99, rate(nexusfeed_events_latency_seconds_bucket[5m])) > 0.01
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          summary: "POST /events p99 latency exceeds the 10ms target"
+
+  - name: nexusfeed-pipeline
+    rules:
+      - alert: FeaturePipelineLagHigh
+        expr: nexusfeed_feature_pipeline_lag_seconds > 1800
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "Feature pipeline consumer lag exceeds 30 minutes"
+          description: "Online features are serving stale data — check Kafka consumer group health."
+
+      - alert: IngestionErrorRateHigh
+        expr: rate(nexusfeed_ingestion_errors_total[5m]) > 5
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Ingestion error rate is elevated"
+
+  - name: nexusfeed-model
+    rules:
+      - alert: CanaryRegressionDetected
+        expr: nexusfeed_canary_ctr_delta < -0.05 or nexusfeed_canary_latency_delta_ms > 10
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "Canary model shows CTR regression or latency regression vs baseline"
+          description: "Automated rollback should trigger — see Addition 5 (Model Canary Deployment)."
+
+      - alert: RateLimitRejectionsSpiking
+        expr: rate(nexusfeed_rate_limit_rejections_total[5m]) > 50
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Rate limiter is rejecting an unusually high fraction of requests"

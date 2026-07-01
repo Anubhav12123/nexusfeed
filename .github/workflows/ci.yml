@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint-test-coverage:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: nexusfeed
+          POSTGRES_PASSWORD: nexusfeed
+          POSTGRES_DB: nexusfeed
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U nexusfeed" --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint (flake8)
+        run: flake8 nexusfeed training tests
+
+      - name: Type check (mypy --strict)
+        run: mypy nexusfeed/types.py --strict
+
+      - name: Run Alembic migrations
+        run: alembic upgrade head
+        env:
+          DATABASE_URL: postgresql+asyncpg://nexusfeed:nexusfeed@localhost:5432/nexusfeed
+
+      - name: Unit tests with coverage
+        run: pytest tests/unit -v --cov=nexusfeed --cov-report=xml --cov-report=term-missing --cov-fail-under=85
+        env:
+          DATABASE_URL: postgresql+asyncpg://nexusfeed:nexusfeed@localhost:5432/nexusfeed
+          REDIS_URL: redis://localhost:6379/0
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml

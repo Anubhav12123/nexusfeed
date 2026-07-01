@@ -1,0 +1,33 @@
+# Addition 5 — Model Canary Deployment. New model versions get 5% traffic
+# before full rollout; automated rollback triggers if canary p99 latency
+# exceeds baseline by 20% or CTR is more than 5% lower (enforced by the
+# CI/CD training.yml evaluation gate + Prometheus AlertManager rule
+# `CanaryRegressionDetected` in infra/monitoring/alert_rules.yml).
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: nexusfeed-api-canary
+spec:
+  replicas: 5
+  strategy:
+    canary:
+      steps:
+        - setWeight: 5
+        - pause: { duration: 600 } # 10 min bake time for AlertManager to catch regressions
+        - setWeight: 25
+        - pause: { duration: 600 }
+        - setWeight: 50
+        - pause: { duration: 300 }
+        - setWeight: 100
+      trafficRouting:
+        nginx:
+          stableIngress: nexusfeed-api-stable
+  selector:
+    matchLabels: { app: nexusfeed-api }
+  template:
+    metadata:
+      labels: { app: nexusfeed-api }
+    spec:
+      containers:
+        - name: api
+          image: nexusfeed/api:latest

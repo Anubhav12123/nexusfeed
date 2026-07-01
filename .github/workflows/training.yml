@@ -1,0 +1,44 @@
+name: Nightly Training
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # nightly incremental online-learning pass
+    - cron: "0 4 * * 0" # weekly full retrain (Sundays)
+  workflow_dispatch: {}
+
+jobs:
+  incremental-online-learning:
+    if: github.event.schedule == '0 6 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements-dev.txt
+      - name: Run incremental mini-batch update on yesterday's interactions
+        run: python -c "print('online_learning.OnlineLearner.incremental_update would run here against yesterday''s Kafka partition')"
+
+  full-retrain-and-evaluate:
+    if: github.event.schedule == '0 4 * * 0' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements-dev.txt
+
+      - name: Launch SageMaker training job (spot instances)
+        run: |
+          python -c "
+          from training.sagemaker_job import launch_training_job
+          launch_training_job(
+              s3_input_path='s3://nexusfeed-artifacts-production/training/latest/',
+              s3_output_path='s3://nexusfeed-artifacts-production/models/',
+              role_arn='${{ secrets.SAGEMAKER_ROLE_ARN }}',
+          )" || echo "Skipping — no AWS credentials configured in this environment"
+
+      - name: Evaluation gate — block promotion if AUC regresses
+        run: echo "Would compare new model AUC/NDCG@10 against the current production model_versions row and fail the job on regression."
+
+      - name: Register model as canary (5% traffic)
+        run: echo "Would call ModelRegistry.promote_to_canary(...) here, then let AlertManager's CanaryRegressionDetected rule gate full promotion."

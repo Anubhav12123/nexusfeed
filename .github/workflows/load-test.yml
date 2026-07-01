@@ -1,0 +1,56 @@
+name: Weekly Load Test
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # every Monday
+  workflow_dispatch: {}
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements-dev.txt
+
+      - name: Start local stack
+        run: docker compose up -d --build
+
+      - name: Wait for API health check
+        run: |
+          for i in {1..30}; do
+            curl -sf http://localhost:8000/health && break
+            sleep 2
+          done
+
+      - name: Seed synthetic data
+        run: |
+          python -m scripts.generate_synthetic_data --users 2000 --items 5000 --interactions 50000
+          python -m scripts.seed_faiss_index
+
+      - name: Run Locust load test (1000 RPS target, p99 < 50ms)
+        run: |
+          locust -f tests/load/locustfile.py --headless -u 1000 -r 50 -t 10m --host http://localhost:8000 \
+            --csv=load_test_results --exit-code-on-error 1
+
+      - name: Automatic regression detection
+        run: |
+          python -c "
+          import pandas as pd
+          df = pd.read_csv('load_test_results_stats.csv')
+          feed_row = df[df['Name'].str.contains('feed', na=False)]
+          if not feed_row.empty and feed_row['99%'].iloc[0] > 50:
+              raise SystemExit('REGRESSION: /feed p99 exceeded 50ms target')
+          print('Load test passed p99 < 50ms target')
+          "
+
+      - name: Upload load test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: load_test_results*.csv
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

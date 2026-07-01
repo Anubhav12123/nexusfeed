@@ -1,0 +1,34 @@
+# Auto-scales the API from 2 to 20 replicas based on p95 latency and CPU —
+# matches the resume-bullet claim "HPA auto-scaling from 2 to 20 replicas
+# based on p95 latency and CPU metrics." Requires the Prometheus Adapter for
+# the custom feed_latency_p95 metric; falls back to CPU-only scaling if the
+# adapter isn't installed.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nexusfeed-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nexusfeed-api
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 65 }
+    - type: Pods
+      pods:
+        metric: { name: nexusfeed_feed_latency_p95_ms }
+        target: { type: AverageValue, averageValue: "40" }
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - { type: Percent, value: 100, periodSeconds: 30 }
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+        - { type: Percent, value: 25, periodSeconds: 60 }

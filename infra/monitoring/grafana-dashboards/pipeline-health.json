@@ -1,0 +1,36 @@
+{
+  "title": "NexusFeed - Pipeline Health",
+  "uid": "nexusfeed-pipeline-health",
+  "panels": [
+    {
+      "title": "Events Consumed / sec (by type)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(nexusfeed_events_consumed_total[5m])", "legendFormat": "{{event_type}}" }]
+    },
+    {
+      "title": "Feature Pipeline Lag (seconds)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [{ "expr": "nexusfeed_feature_pipeline_lag_seconds", "legendFormat": "lag" }],
+      "alert": { "conditions": [{ "evaluator": { "params": [1800], "type": "gt" } }] }
+    },
+    {
+      "title": "Ingestion Error Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [{ "expr": "rate(nexusfeed_ingestion_errors_total[5m])", "legendFormat": "{{reason}}" }]
+    },
+    {
+      "title": "FAISS Retrieval / Ranking Timing",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        { "expr": "histogram_quantile(0.99, rate(nexusfeed_faiss_retrieval_seconds_bucket[5m]))", "legendFormat": "faiss p99" },
+        { "expr": "histogram_quantile(0.99, rate(nexusfeed_ranking_seconds_bucket[5m]))", "legendFormat": "ranking p99" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "time": { "from": "now-1h", "to": "now" }
+}

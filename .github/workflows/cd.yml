@@ -1,0 +1,55 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/api:${{ github.sha }},ghcr.io/${{ github.repository }}/api:latest
+
+      - name: Build and push worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.worker
+          push: true
+          tags: ghcr.io/${{ github.repository }}/worker:${{ github.sha }},ghcr.io/${{ github.repository }}/worker:latest
+
+      - name: Deploy to Kubernetes (blue-green via rollout)
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+        continue-on-error: true # no-op without real cluster credentials configured
+
+      - name: Apply manifests and set new image
+        run: |
+          kubectl apply -f infra/kubernetes/configmap.yaml
+          kubectl apply -f infra/kubernetes/api-deployment.yaml
+          kubectl apply -f infra/kubernetes/worker-deployment.yaml
+          kubectl apply -f infra/kubernetes/hpa.yaml
+          kubectl set image deployment/nexusfeed-api api=ghcr.io/${{ github.repository }}/api:${{ github.sha }}
+          kubectl set image deployment/nexusfeed-worker worker=ghcr.io/${{ github.repository }}/worker:${{ github.sha }}
+          kubectl rollout status deployment/nexusfeed-api --timeout=180s
+        continue-on-error: true

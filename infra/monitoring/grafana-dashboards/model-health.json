@@ -1,0 +1,32 @@
+{
+  "title": "NexusFeed - Model Health",
+  "uid": "nexusfeed-model-health",
+  "panels": [
+    {
+      "title": "Prediction Score Distribution",
+      "type": "heatmap",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(nexusfeed_prediction_score_bucket[5m])" }]
+    },
+    {
+      "title": "Experiment Assignments (by variant)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(nexusfeed_experiment_assignments_total[5m])", "legendFormat": "{{experiment}}/{{variant}}" }]
+    },
+    {
+      "title": "Canary CTR Delta vs Baseline",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [{ "expr": "nexusfeed_canary_ctr_delta", "legendFormat": "ctr delta" }]
+    },
+    {
+      "title": "Canary Latency Delta vs Baseline (ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [{ "expr": "nexusfeed_canary_latency_delta_ms", "legendFormat": "latency delta" }]
+    }
+  ],
+  "schemaVersion": 39,
+  "time": { "from": "now-1h", "to": "now" }
+}

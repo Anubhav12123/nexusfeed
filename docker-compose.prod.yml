@@ -1,0 +1,46 @@
+# Production overlay — apply with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+# Adds resource limits, replica counts, and health-check-gated restarts.
+# In real production this is superseded by infra/kubernetes/*.
+
+name: nexusfeed
+
+services:
+  api:
+    deploy:
+      replicas: 5
+      resources:
+        limits: { cpus: "1.0", memory: 1G }
+        reservations: { cpus: "0.5", memory: 512M }
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  worker:
+    deploy:
+      replicas: 3
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+      restart_policy:
+        condition: on-failure
+        max_attempts: 5
+
+  postgres:
+    deploy:
+      resources:
+        limits: { cpus: "2.0", memory: 2G }
+
+  redis:
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 512M }
+
+  kafka:
+    deploy:
+      resources:
+        limits: { cpus: "2.0", memory: 2G }

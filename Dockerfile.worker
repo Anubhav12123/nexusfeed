@@ -1,0 +1,28 @@
+# Separate image for the Kafka consumer / feature-pipeline worker process —
+# decoupled from the API image so scaling consumers doesn't scale API pods.
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+FROM python:3.11-slim AS runtime
+
+# See Dockerfile — libgomp1 is required for `import lightgbm`, which
+# nexusfeed/__init__.py imports eagerly (import-order fix for the faiss +
+# lightgbm OpenMP conflict), so even the worker process needs it despite
+# never calling the ranking model directly.
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --uid 1000 nexusfeed
+WORKDIR /app
+
+COPY --from=builder /install /usr/local
+COPY nexusfeed ./nexusfeed
+
+USER nexusfeed
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "-m", "nexusfeed.workers.feature_pipeline_worker"]

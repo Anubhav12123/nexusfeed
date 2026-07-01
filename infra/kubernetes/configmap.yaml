@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nexusfeed-config
+data:
+  ENV: "production"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  KAFKA_BOOTSTRAP_SERVERS: "nexusfeed-msk-bootstrap:9092"
+  REDIS_URL: "redis://nexusfeed-elasticache:6379/0"
+  RATE_LIMIT_EVENTS_PER_SECOND: "100"
+  FAISS_TOP_K: "1000"
+  BANDIT_EPSILON: "0.10"
+  HOLDBACK_FRACTION: "0.05"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nexusfeed-secrets
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql+asyncpg://REPLACE_ME:REPLACE_ME@nexusfeed-rds:5432/nexusfeed"
+  VALID_API_KEYS: "REPLACE_ME_WITH_REAL_SECRETS_MANAGER_REFERENCE"

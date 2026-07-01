@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexusfeed-worker
+  labels: { app: nexusfeed-worker }
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: nexusfeed-worker }
+  template:
+    metadata:
+      labels: { app: nexusfeed-worker }
+    spec:
+      containers:
+        - name: worker
+          image: nexusfeed/worker:latest
+          envFrom:
+            - configMapRef: { name: nexusfeed-config }
+            - secretRef: { name: nexusfeed-secrets }
+          resources:
+            requests: { cpu: "100m", memory: "256Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
