@@ -151,7 +151,3 @@ Python · FastAPI · asyncio · PyTorch · LightGBM · ONNX Runtime · Hugging F
 FAISS · MLflow · Optuna · SHAP · Apache Kafka (aiokafka) · Redis · PostgreSQL (pgvector) ·
 SQLAlchemy · Alembic · Docker · Kubernetes · Terraform · AWS (SageMaker, MSK, ElastiCache, RDS, S3) ·
 Prometheus · Grafana · AlertManager · OpenTelemetry · GitHub Actions · Locust · pytest
-
----
-
-Built by Anubhav Dixit.
