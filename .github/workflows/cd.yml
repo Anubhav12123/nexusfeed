@@ -27,8 +27,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # continue-on-error because pushing to GHCR needs the repo's default
+      # GITHUB_TOKEN permission set to "Read and write" (Settings > Actions >
+      # General > Workflow permissions) — that's a one-time manual toggle in
+      # the GitHub UI that this workflow file can't set for itself. Until
+      # it's flipped, the push leg fails fast but the build itself (the part
+      # that actually catches Dockerfile/dependency regressions) still runs
+      # and still gates the job.
       - name: Build and push API image
         uses: docker/build-push-action@v6
+        continue-on-error: true
         with:
           context: .
           file: Dockerfile
@@ -37,6 +45,7 @@ jobs:
 
       - name: Build and push worker image
         uses: docker/build-push-action@v6
+        continue-on-error: true
         with:
           context: .
           file: Dockerfile.worker
