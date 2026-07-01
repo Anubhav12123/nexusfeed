@@ -37,7 +37,9 @@ def main() -> None:
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size)
 
-    model = TwoTowerModel(num_users=args.num_users, num_items=args.num_items, num_categories=args.num_categories)
+    model = TwoTowerModel(
+        num_users=args.num_users, num_items=args.num_items, num_categories=args.num_categories
+    )
     trainer = Trainer(model, learning_rate=args.lr)
     history = trainer.fit(train_loader, val_loader, max_epochs=args.epochs)
     logger.info("training_complete", extra=history)

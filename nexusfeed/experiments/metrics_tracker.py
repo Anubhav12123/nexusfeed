@@ -14,7 +14,9 @@ class MetricsTracker:
     async def record_impression(self, experiment_id: UUID, variant: str) -> None:
         await self.repo.record_impression(experiment_id, variant)
 
-    async def record_event(self, experiment_id: UUID, variant: str, event_type: EventType, dwell_ms: int | None = None) -> None:
+    async def record_event(
+        self, experiment_id: UUID, variant: str, event_type: EventType, dwell_ms: int | None = None
+    ) -> None:
         if event_type == EventType.CLICK:
             await self.repo.record_click(experiment_id, variant)
         elif event_type == EventType.SHARE or event_type == EventType.SAVE:

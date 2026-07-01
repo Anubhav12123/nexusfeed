@@ -8,7 +8,6 @@ import numpy as np
 from nexusfeed.exceptions import FeatureNotFoundError
 from nexusfeed.features.offline_store import OfflineFeatureStore
 from nexusfeed.features.online_store import OnlineFeatureStore
-from nexusfeed.types import UserProfile
 
 
 class UserFeatureService:

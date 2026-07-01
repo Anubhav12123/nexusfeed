@@ -28,7 +28,10 @@ def build_objective(data_path: str, num_users: int, num_items: int, num_categori
         val_loader = DataLoader(val_ds, batch_size=batch_size)
 
         model = TwoTowerModel(
-            num_users=num_users, num_items=num_items, num_categories=num_categories, embedding_dim=embedding_dim
+            num_users=num_users,
+            num_items=num_items,
+            num_categories=num_categories,
+            embedding_dim=embedding_dim,
         )
         trainer = Trainer(model, learning_rate=learning_rate)
         history = trainer.fit(train_loader, val_loader, max_epochs=5, patience=2)
@@ -37,7 +40,9 @@ def build_objective(data_path: str, num_users: int, num_items: int, num_categori
     return objective
 
 
-def run_study(data_path: str, num_users: int, num_items: int, num_categories: int, n_trials: int = 20) -> optuna.Study:
+def run_study(
+    data_path: str, num_users: int, num_items: int, num_categories: int, n_trials: int = 20
+) -> optuna.Study:
     study = optuna.create_study(direction="minimize", study_name="nexusfeed-two-tower-hpo")
     study.optimize(build_objective(data_path, num_users, num_items, num_categories), n_trials=n_trials)
     logger.info("hpo_complete", extra={"best_params": study.best_params, "best_value": study.best_value})

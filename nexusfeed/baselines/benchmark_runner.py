@@ -62,7 +62,8 @@ class BenchmarkRunner:
         lines = [header, "-" * len(header)]
         for r in self.results:
             lines.append(
-                f"{r.approach_name:<25}{r.ctr:>10.2%}{r.avg_dwell_ms:>18.1f}{r.return_rate:>15.2%}{r.diversity_score:>12.3f}"
+                f"{r.approach_name:<25}{r.ctr:>10.2%}{r.avg_dwell_ms:>18.1f}"
+                f"{r.return_rate:>15.2%}{r.diversity_score:>12.3f}"
             )
         two_tower = next((r for r in self.results if r.approach_name == "two_tower"), None)
         if two_tower:

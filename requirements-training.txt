@@ -1,0 +1,10 @@
+# Only needed to actually launch a SageMaker training job
+# (training/sagemaker_job.py). Deliberately kept out of requirements-dev.txt
+# because sagemaker pins protobuf<5.0, which conflicts with
+# opentelemetry-proto's protobuf>=5.0 pin in requirements.txt — installing
+# both in the same environment is unsatisfiable for pip's resolver.
+#
+# Install only when you need this:
+#   pip install -r requirements-training.txt
+boto3==1.35.79
+sagemaker==2.235.1

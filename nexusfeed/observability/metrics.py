@@ -54,7 +54,9 @@ FEATURE_PIPELINE_LAG_SECONDS = Gauge(
 )
 
 # 8. Ingestion error rate
-INGESTION_ERRORS = Counter("nexusfeed_ingestion_errors_total", "Event ingestion validation/routing errors", ["reason"])
+INGESTION_ERRORS = Counter(
+    "nexusfeed_ingestion_errors_total", "Event ingestion validation/routing errors", ["reason"]
+)
 
 # 9. Prediction score distribution
 PREDICTION_SCORE = Histogram(
@@ -67,7 +69,9 @@ PREDICTION_SCORE = Histogram(
 IN_FLIGHT_REQUESTS = Gauge("nexusfeed_in_flight_requests", "Requests currently being served", ["route"])
 
 # 11. Rate limiter rejections
-RATE_LIMIT_REJECTIONS = Counter("nexusfeed_rate_limit_rejections_total", "Requests rejected by the rate limiter")
+RATE_LIMIT_REJECTIONS = Counter(
+    "nexusfeed_rate_limit_rejections_total", "Requests rejected by the rate limiter"
+)
 
 # 12. Experiment assignment counter (A/B health)
 EXPERIMENT_ASSIGNMENTS = Counter(
@@ -76,4 +80,6 @@ EXPERIMENT_ASSIGNMENTS = Counter(
 
 # Bonus: model canary comparison gauge (Addition 5)
 CANARY_CTR_DELTA = Gauge("nexusfeed_canary_ctr_delta", "Canary model CTR minus baseline CTR")
-CANARY_LATENCY_DELTA_MS = Gauge("nexusfeed_canary_latency_delta_ms", "Canary model p99 latency minus baseline p99 (ms)")
+CANARY_LATENCY_DELTA_MS = Gauge(
+    "nexusfeed_canary_latency_delta_ms", "Canary model p99 latency minus baseline p99 (ms)"
+)

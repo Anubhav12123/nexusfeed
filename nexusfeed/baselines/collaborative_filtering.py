@@ -19,7 +19,9 @@ class CollaborativeFilteringBaseline:
         self.user_index: dict[str, int] = {}
         self.item_index: dict[str, int] = {}
 
-    def fit(self, interaction_matrix: np.ndarray, user_ids: list[str], item_ids: list[str]) -> "CollaborativeFilteringBaseline":
+    def fit(
+        self, interaction_matrix: np.ndarray, user_ids: list[str], item_ids: list[str]
+    ) -> "CollaborativeFilteringBaseline":
         self.user_index = {uid: i for i, uid in enumerate(user_ids)}
         self.item_index = {iid: i for i, iid in enumerate(item_ids)}
 

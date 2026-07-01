@@ -3,9 +3,6 @@
 """
 from __future__ import annotations
 
-import random
-from uuid import UUID
-
 import numpy as np
 
 from nexusfeed.observability.metrics import FAISS_RETRIEVAL_SECONDS

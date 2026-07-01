@@ -40,7 +40,9 @@ class ShapExplainer:
         top_feature, _ = self.top_features(shap_values, top_k=1)[0]
         return _FEATURE_EXPLANATIONS.get(top_feature, "it matches your personalization profile")
 
-    def developer_attribution(self, item_id: str, shap_values: np.ndarray, model_version: str, rank: int) -> dict:
+    def developer_attribution(
+        self, item_id: str, shap_values: np.ndarray, model_version: str, rank: int
+    ) -> dict:
         """Full drill-down record for the developer/admin explainability dashboard."""
         return {
             "item_id": item_id,
@@ -53,7 +55,10 @@ class ShapExplainer:
         }
 
     def detect_false_attribution(
-        self, shap_values_batch: np.ndarray, dominant_feature: str = "popularity_score", threshold: float = 0.5
+        self,
+        shap_values_batch: np.ndarray,
+        dominant_feature: str = "popularity_score",
+        threshold: float = 0.5,
     ) -> float:
         """Flags the fraction of recommendations where a popularity-style
         feature dominates over genuine personalization signal — this is the

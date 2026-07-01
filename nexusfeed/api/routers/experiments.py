@@ -8,7 +8,6 @@ from fastapi import APIRouter, Body, Request
 from nexusfeed.db.connection import get_db
 from nexusfeed.db.repositories.experiment_repo import ExperimentRepository
 from nexusfeed.experiments.experiment_manager import ExperimentManager
-from nexusfeed.observability.metrics import FEED_LATENCY_SECONDS
 
 router = APIRouter(tags=["experiments"])
 
@@ -17,10 +16,16 @@ router = APIRouter(tags=["experiments"])
 async def get_experiment_assignment(user_id: UUID, request: Request):
     async for db in get_db():
         manager = ExperimentManager(ExperimentRepository(db), request.app.state.redis)
+        experiment_name = request.app.state.settings.default_experiment_name
         try:
-            assignment = await manager.get_assignment(user_id, request.app.state.settings.default_experiment_name)
+            assignment = await manager.get_assignment(user_id, experiment_name)
         except Exception:
-            return {"user_id": str(user_id), "variant": "control", "bucket": None, "note": "no active experiment"}
+            return {
+                "user_id": str(user_id),
+                "variant": "control",
+                "bucket": None,
+                "note": "no active experiment",
+            }
         return assignment.model_dump()
 
 

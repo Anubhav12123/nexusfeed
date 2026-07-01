@@ -26,7 +26,9 @@ class ExperimentManager:
     async def get_assignment(self, user_id: UUID, experiment_name: str) -> ExperimentAssignment:
         if is_in_holdback(user_id):
             EXPERIMENT_ASSIGNMENTS.labels(experiment=experiment_name, variant="holdback").inc()
-            return ExperimentAssignment(user_id=user_id, experiment_name=experiment_name, bucket=-1, variant="holdback")
+            return ExperimentAssignment(
+                user_id=user_id, experiment_name=experiment_name, bucket=-1, variant="holdback"
+            )
 
         cache_key = f"experiment:{experiment_name}:user:{user_id}"
         cached = await self.redis.get(cache_key)
@@ -42,12 +44,16 @@ class ExperimentManager:
 
         bucket = bucket_for(user_id, experiment_name)
         variant = assign_variant(
-            bucket, (experiment.control_low, experiment.control_high), (experiment.treatment_low, experiment.treatment_high)
+            bucket,
+            (experiment.control_low, experiment.control_high),
+            (experiment.treatment_low, experiment.treatment_high),
         )
 
         await self.redis.set(cache_key, f"{bucket}:{variant}", ex=604800)
         EXPERIMENT_ASSIGNMENTS.labels(experiment=experiment_name, variant=variant).inc()
-        return ExperimentAssignment(user_id=user_id, experiment_name=experiment_name, bucket=bucket, variant=variant)
+        return ExperimentAssignment(
+            user_id=user_id, experiment_name=experiment_name, bucket=bucket, variant=variant
+        )
 
     async def list_active(self) -> list[Experiment]:
         return await self.repo.list_active()

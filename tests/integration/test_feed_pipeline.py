@@ -73,6 +73,7 @@ def test_rate_limit_returns_429_after_threshold(client):
     statuses = []
     for _ in range(150):
         item_id = str(uuid.uuid4())
-        response = client.post("/events", json={"user_id": user_id, "item_id": item_id, "event_type": "view_full"})
+        payload = {"user_id": user_id, "item_id": item_id, "event_type": "view_full"}
+        response = client.post("/events", json=payload)
         statuses.append(response.status_code)
     assert 429 in statuses

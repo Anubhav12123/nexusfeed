@@ -29,7 +29,9 @@ class ItemRepository:
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def most_similar(self, embedding: list[float], k: int = 10, exclude: UUID | None = None) -> list[Item]:
+    async def most_similar(
+        self, embedding: list[float], k: int = 10, exclude: UUID | None = None
+    ) -> list[Item]:
         """Fallback pgvector cosine-distance query — used when the FAISS
         index is cold (e.g. right after a fresh deploy before the nightly
         index build has run once).

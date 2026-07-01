@@ -39,7 +39,9 @@ def sample_shown_not_clicked_negatives(
     uniform random sampling if fewer than `ratio` shown-not-clicked items
     exist for this impression.
     """
-    shown_not_clicked = [item for _, shown_items in impressions for item in shown_items if item != clicked_item]
+    shown_not_clicked = [
+        item for _, shown_items in impressions for item in shown_items if item != clicked_item
+    ]
     if len(shown_not_clicked) >= ratio:
         return random.sample(shown_not_clicked, ratio)
     return shown_not_clicked

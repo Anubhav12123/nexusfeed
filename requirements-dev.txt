@@ -11,6 +11,11 @@ mypy==1.13.0
 flake8==7.1.1
 pre-commit==4.0.1
 
-boto3==1.35.79  # S3 / SageMaker client, local dev only needs it for localstack tests
-sagemaker==2.235.1
 fakeredis==2.26.1
+
+# boto3/sagemaker are NOT here on purpose: sagemaker pins protobuf<5.0, which
+# hard-conflicts with opentelemetry-proto's protobuf>=5.0 (both required by
+# requirements.txt) -- pip's resolver cannot satisfy both in one environment.
+# They're only needed for training/sagemaker_job.py (a lazy import, used
+# only when actually launching a SageMaker job), so they live in their own
+# file installed just-in-time by that one workflow. See requirements-training.txt.

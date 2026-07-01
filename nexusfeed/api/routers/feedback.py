@@ -8,7 +8,6 @@ from nexusfeed.db.connection import get_db
 from nexusfeed.db.repositories.interaction_repo import InteractionRepository
 from nexusfeed.features.online_store import OnlineFeatureStore
 from nexusfeed.types import EventIngestResponse, FeedbackRequest
-from uuid import uuid4
 
 router = APIRouter(tags=["feedback"])
 

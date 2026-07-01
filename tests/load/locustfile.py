@@ -25,7 +25,9 @@ class NexusFeedUser(HttpUser):
 
     @task(10)
     def get_feed(self) -> None:
-        self.client.get(f"/feed/{self.user_id}", params={"n": 20}, headers=self.headers, name="/feed/[user_id]")
+        self.client.get(
+            f"/feed/{self.user_id}", params={"n": 20}, headers=self.headers, name="/feed/[user_id]"
+        )
 
     @task(5)
     def post_event(self) -> None:

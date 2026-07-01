@@ -48,11 +48,13 @@ class InteractionDataset(Dataset):
             "historical_ctr": torch.tensor(row["historical_ctr"], dtype=torch.float32),
         }
 
-        negatives = sample_in_batch_negatives(np.array([row["item_id"]]), self.num_items, self.negative_ratio)[0]
+        positive_idx = np.array([row["item_id"]])
+        negatives = sample_in_batch_negatives(positive_idx, self.num_items, self.negative_ratio)[0]
+        content_dim = len(row["content_embedding"])
         negative_batch = {
             "item_ids": torch.tensor(negatives, dtype=torch.long),
             "category_ids": torch.zeros(self.negative_ratio, dtype=torch.long),
-            "content_embedding": torch.zeros(self.negative_ratio, len(row["content_embedding"]), dtype=torch.float32),
+            "content_embedding": torch.zeros(self.negative_ratio, content_dim, dtype=torch.float32),
             "freshness_score": torch.zeros(self.negative_ratio, dtype=torch.float32),
             "historical_ctr": torch.zeros(self.negative_ratio, dtype=torch.float32),
         }

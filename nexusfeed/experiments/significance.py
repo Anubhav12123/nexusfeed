@@ -37,7 +37,9 @@ def mann_whitney_u_test(control_samples: list[float], treatment_samples: list[fl
     return float(statistic), float(p_value)
 
 
-def sample_ratio_mismatch(control_n: int, treatment_n: int, expected_ratio: float = 1.0, tolerance: float = 0.02) -> bool:
+def sample_ratio_mismatch(
+    control_n: int, treatment_n: int, expected_ratio: float = 1.0, tolerance: float = 0.02
+) -> bool:
     """Returns True if the observed split matches the expected ratio within
     tolerance (i.e. SRM is NOT present — result is trustworthy on this axis).
     Uses a chi-square goodness-of-fit test against the expected split.
@@ -47,7 +49,9 @@ def sample_ratio_mismatch(control_n: int, treatment_n: int, expected_ratio: floa
         return True
     expected_control = total * (expected_ratio / (1 + expected_ratio))
     expected_treatment = total - expected_control
-    chi2, p_value = stats.chisquare([control_n, treatment_n], f_exp=[expected_control, expected_treatment])
+    chi2, p_value = stats.chisquare(
+        [control_n, treatment_n], f_exp=[expected_control, expected_treatment]
+    )
     return bool(p_value > 0.001)  # SRM check uses a strict threshold per industry convention
 
 
@@ -55,7 +59,9 @@ def bonferroni_correction(alpha: float, num_metrics: int) -> float:
     return alpha / num_metrics if num_metrics > 0 else alpha
 
 
-def required_sample_size(baseline_rate: float, minimum_detectable_effect: float, power: float = 0.8, alpha: float = 0.05) -> int:
+def required_sample_size(
+    baseline_rate: float, minimum_detectable_effect: float, power: float = 0.8, alpha: float = 0.05
+) -> int:
     """Approximate per-arm sample size for a two-proportion test, using the
     normal approximation — good enough for pre-registration sanity checks.
     """
@@ -64,7 +70,9 @@ def required_sample_size(baseline_rate: float, minimum_detectable_effect: float,
     p1 = baseline_rate
     p2 = baseline_rate * (1 + minimum_detectable_effect)
     p_bar = (p1 + p2) / 2
-    numerator = (z_alpha * math.sqrt(2 * p_bar * (1 - p_bar)) + z_beta * math.sqrt(p1 * (1 - p1) + p2 * (1 - p2))) ** 2
+    numerator = (
+        z_alpha * math.sqrt(2 * p_bar * (1 - p_bar)) + z_beta * math.sqrt(p1 * (1 - p1) + p2 * (1 - p2))
+    ) ** 2
     denominator = (p2 - p1) ** 2
     return math.ceil(numerator / denominator) if denominator > 0 else 0
 
@@ -75,7 +83,9 @@ def evaluate_experiment(
     expected_ratio: float = 1.0,
     num_metrics_tested: int = 1,
 ) -> SignificanceResult:
-    z, p_value = two_proportion_z_test(control.clicks, control.impressions, treatment.clicks, treatment.impressions)
+    z, p_value = two_proportion_z_test(
+        control.clicks, control.impressions, treatment.clicks, treatment.impressions
+    )
     srm_ok = sample_ratio_mismatch(control.impressions, treatment.impressions, expected_ratio)
     alpha = bonferroni_correction(0.05, num_metrics_tested)
 

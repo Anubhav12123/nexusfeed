@@ -52,7 +52,9 @@ def intra_list_diversity(item_embeddings: np.ndarray) -> float:
 
 
 class EvaluationReport:
-    def __init__(self, auc_score: float, ndcg10: float, mrr_score: float, coverage: float, diversity: float) -> None:
+    def __init__(
+        self, auc_score: float, ndcg10: float, mrr_score: float, coverage: float, diversity: float
+    ) -> None:
         self.auc = auc_score
         self.ndcg10 = ndcg10
         self.mrr = mrr_score

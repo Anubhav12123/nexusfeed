@@ -1,0 +1,7 @@
+[flake8]
+max-line-length = 110
+# E203/W503 conflict with black's formatting choices (whitespace before ':'
+# in slices, line breaks before binary operators) — standard ignores when
+# black is the formatter, per black's own documentation.
+extend-ignore = E203, W503
+exclude = .git,__pycache__,.venv,venv,data,mlruns,alembic

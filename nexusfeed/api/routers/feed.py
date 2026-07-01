@@ -17,10 +17,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexusfeed.db.connection import get_db
 from nexusfeed.db.repositories.experiment_repo import ExperimentRepository
-from nexusfeed.db.repositories.item_repo import ItemRepository
 from nexusfeed.experiments.bandit import EpsilonGreedyBandit
 from nexusfeed.experiments.experiment_manager import ExperimentManager
-from nexusfeed.features.item_features import ItemFeatureService
+from nexusfeed.features.offline_store import OfflineFeatureStore
 from nexusfeed.features.online_store import OnlineFeatureStore
 from nexusfeed.features.user_features import UserFeatureService
 from nexusfeed.observability.metrics import FEED_LATENCY_SECONDS, IN_FLIGHT_REQUESTS
@@ -44,21 +43,12 @@ async def get_feed(
     try:
         with FEED_LATENCY_SECONDS.time():
             online_store = OnlineFeatureStore(request.app.state.redis)
-            item_features = ItemFeatureService(online_store)
-            user_features = UserFeatureService(online_store, offline_store=None)  # type: ignore[arg-type]
+            user_features = UserFeatureService(online_store, offline_store=OfflineFeatureStore(db))
 
-            # 1. Fetch user embedding from Redis (~1ms) — falls back to a
-            #    deterministic cold-start prior embedding if the user is new.
-            try:
-                user_embedding = await online_store.get_user_embedding(user_id)
-                is_cold_start = False
-            except Exception:
-                import numpy as np
-
-                user_embedding = np.random.default_rng(seed=hash(str(user_id)) % (2**32)).normal(
-                    0, 0.1, request.app.state.embedding_dim
-                ).tolist()
-                is_cold_start = True
+            # 1. Fetch user embedding from Redis (~1ms) — falls back to the
+            #    hybrid cold-start prior (deterministic per-onboarding-category
+            #    embedding) if the user has no cached embedding yet.
+            user_embedding, is_cold_start = await user_features.get_embedding(user_id)
 
             # 2. ANN retrieval: top-K from FAISS (~5ms)
             candidate_generator = request.app.state.candidate_generator
@@ -100,19 +90,28 @@ async def get_feed(
 
             # A/B: apply bandit exploration slots (multi-armed bandit, Addition/Layer 7)
             manager = ExperimentManager(ExperimentRepository(db), request.app.state.redis)
+            experiment_name = request.app.state.settings.default_experiment_name
             try:
-                assignment = await manager.get_assignment(user_id, request.app.state.settings.default_experiment_name)
+                assignment = await manager.get_assignment(user_id, experiment_name)
             except Exception:
                 assignment = None
 
             final_ids = _bandit.inject_exploration_slots(
-                [i.item_id for i in final_items], candidate_ids, slot_fraction=request.app.state.settings.bandit_epsilon
+                [i.item_id for i in final_items],
+                candidate_ids,
+                slot_fraction=request.app.state.settings.bandit_epsilon,
             )
             by_id = {i.item_id: i for i in final_items}
             ordered = [by_id.get(fid) for fid in final_ids if fid in by_id]
 
             feed_items = [
-                FeedItem(item_id=item.item_id, score=item.score, rank=idx + 1, category=item.category, is_trending=item.is_trending)
+                FeedItem(
+                    item_id=item.item_id,
+                    score=item.score,
+                    rank=idx + 1,
+                    category=item.category,
+                    is_trending=item.is_trending,
+                )
                 for idx, item in enumerate(ordered)
             ]
 
@@ -133,6 +132,7 @@ async def get_feed(
             model_version=request.app.state.model_version,
             experiment_bucket=assignment.bucket if assignment else None,
             experiment_variant=assignment.variant if assignment else None,
+            is_cold_start=is_cold_start,
             latency_ms=round(elapsed_ms, 2),
             request_id=getattr(request.state, "request_id", None),
         )

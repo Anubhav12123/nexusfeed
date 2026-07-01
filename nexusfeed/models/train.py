@@ -28,7 +28,9 @@ class Trainer:
     ) -> None:
         self.model = model.to(device)
         self.device = device
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        self.optimizer = torch.optim.Adam(
+            self.model.parameters(), lr=learning_rate, weight_decay=weight_decay
+        )
 
     def train_epoch(self, dataloader: DataLoader) -> float:
         self.model.train()

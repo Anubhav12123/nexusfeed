@@ -9,7 +9,7 @@ not just for brand-new items.
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -44,7 +44,9 @@ class EpsilonGreedyBandit:
         if random.random() < self.epsilon:
             return random.choice(candidate_pool)
 
-        known = [(item_id, self.arms[item_id].mean_reward) for item_id in candidate_pool if item_id in self.arms]
+        known = [
+            (item_id, self.arms[item_id].mean_reward) for item_id in candidate_pool if item_id in self.arms
+        ]
         if not known:
             return random.choice(candidate_pool)
         return max(known, key=lambda x: x[1])[0]

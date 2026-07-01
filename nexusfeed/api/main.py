@@ -89,7 +89,6 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
-    settings = get_settings()
     app = FastAPI(
         title="NexusFeed",
         description="Real-Time AI Recommendation and Personalization Engine",

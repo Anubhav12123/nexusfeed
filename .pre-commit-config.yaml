@@ -13,7 +13,7 @@ repos:
     rev: 7.1.1
     hooks:
       - id: flake8
-        args: ["--max-line-length=110"]
+        # picks up ./.flake8 automatically — same config CI and `make lint` use
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.13.0

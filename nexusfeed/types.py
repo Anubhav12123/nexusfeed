@@ -134,6 +134,7 @@ class FeedResponse(BaseModel):
     model_version: str
     experiment_bucket: int | None = None
     experiment_variant: str | None = None
+    is_cold_start: bool = False
     latency_ms: float
     request_id: str | None = None
 
